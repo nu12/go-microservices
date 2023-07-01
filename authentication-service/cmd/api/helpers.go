@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// TODO: Replace this sections with https://github.com/tsawler/toolbox
 type jsonResponse struct {
 	Error   bool   `json:"error"`
 	Message string `json:"message"`
