@@ -62,6 +62,9 @@ func openDB(dsn string) (*sql.DB, error) {
 
 func connectToDB() *sql.DB {
 	dsn := os.Getenv("DSN")
+
+	// TODO: Create a stopping condition for the loop
+
 	for {
 		connection, err := openDB(dsn)
 		if err != nil {
@@ -73,5 +76,5 @@ func connectToDB() *sql.DB {
 
 		time.Sleep(2 * time.Second)
 	}
-	return nil
+	//return nil
 }
