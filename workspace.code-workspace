@@ -14,6 +14,12 @@
 		},
 		{
 			"path": "logger-service"
+		},
+		{
+			"path": "mailer-service"
+		},
+		{
+			"path": "listener-service"
 		}
 	]
 }
