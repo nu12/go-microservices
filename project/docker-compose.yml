@@ -51,6 +51,18 @@ services:
       - postgres:/var/lib/postgresql/data
       - ./db-data/users.sql:/docker-entrypoint-initdb.d/init.sql
 
+  pgadmin:
+    image: dpage/pgadmin4:6.14
+    restart: always
+    ports:
+      - "9080:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: password
+
   logger:
     build:
       context: ./../logger-service
@@ -76,6 +88,17 @@ services:
       - mongo:/data/db
       - ./db-data/users.sql:/docker-entrypoint-initdb.d/init.sql
 
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    restart: always
+    ports:
+      - "9081:8081"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://admin:password@mongo:27017/"
+
   mailer:
     build:
       context: ./../mailer-service
@@ -95,11 +118,31 @@ services:
       replicas: 1
   
   mailhog:
-    image: 'mailhog/mailhog:latest'
+    image: 'mailhog/mailhog:v1.0.1'
     ports:
       - "1025:1025"
       - "8025:8025"
 
+  listener:
+    build:
+      context: ./../listener-service
+      dockerfile: ./../listener-service/Dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  rabbitmq:
+    image: rabbitmq:3.9.14-alpine
+    ports:
+      - "5672:5672"
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+
 volumes:
   postgres:
   mongo:
+  rabbitmq:
