@@ -1,0 +1,19 @@
+name: Build images
+on:
+  push:
+  - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [listerner-service, mailer-service, logger-service, authentication-service, broker-service, front-end]
+    steps:
+    - uses: actions/checkout@v3
+    - run: |
+      echo ${{ secrets.TOKEN }} | docker login ghcr.io -u $ -p 
+      docker build -t ghcr.io/nu12/go-microservices/${{ matrix.service }}:latest -f ghcr.io/nu12/go-microservices/${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
+      docker push ghcr.io/nu12/go-microservices/${{ matrix.service }}:latest
+
+    

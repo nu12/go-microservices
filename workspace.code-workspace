@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "listener-service"
+		},
+		{
+			"path": ".github"
 		}
 	]
 }
