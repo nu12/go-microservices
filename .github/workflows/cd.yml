@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+        echo ${{ secrets.TOKEN }} | docker login ghcr.io -u ${{github.actor}} --password-stdin
         docker build -t ${{ matrix.service }}:latest -f ./${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
         docker push ${{ matrix.service }}:latest
 
