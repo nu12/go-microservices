@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [listerner-service, mailer-service, logger-service, authentication-service, broker-service, front-end]
+        service: [listener-service, mailer-service, logger-service, authentication-service, broker-service, front-end]
     steps:
     - uses: actions/checkout@v3
     - run: |
