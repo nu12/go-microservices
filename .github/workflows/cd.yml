@@ -1,7 +1,8 @@
 name: Build images
 on:
   push:
-  - main
+    branches:
+    - main
 
 jobs:
   build:
