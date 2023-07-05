@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o logger cmd/api/main.go cmd/api/routes.go cmd/api/handlers.go cmd/api/helpers.go
+RUN go build -o logger cmd/api/main.go cmd/api/routes.go cmd/api/handlers.go cmd/api/helpers.go cmd/api/rpc.go
 
 FROM alpine:latest
 

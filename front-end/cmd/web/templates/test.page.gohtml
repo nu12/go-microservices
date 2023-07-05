@@ -68,9 +68,9 @@
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                output.innerHTML += "Error: " + data.message;
+                output.innerHTML += "<p>Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "Response from broker: " + data.message;
+                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));
@@ -89,7 +89,7 @@
             if (data.error) {
                 console.log(data.message);
             }else{
-                output.innerHTML += "Response from broker: " + data.message;
+                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));
@@ -99,8 +99,8 @@
         const payload = {
             action: 'log',
             log: {
-                name: "event",
-                data: "some kind of data"
+                name: "log ",
+                data: "Log data goes here"
             }
         };
 
@@ -119,9 +119,9 @@
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                output.innerHTML += "Error: " + data.message;
+                output.innerHTML += "<p>Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "Response from broker: " + data.message;
+                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));
@@ -153,9 +153,9 @@
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                output.innerHTML += "Error: " + data.message;
+                output.innerHTML += "<p>Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "Response from broker: " + data.message;
+                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));
