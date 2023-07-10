@@ -64,7 +64,7 @@
             headers: headers
         };
 
-        fetch("http:\/\/localhost:8081/handle",body)
+        fetch({{ index . "Address" }} + "/handle",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
@@ -83,7 +83,7 @@
             method: 'POST',
         }
     
-        fetch("http:\/\/localhost:8081",body)
+        fetch({{ index . "Address" }},body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML ="empty post request";
@@ -115,7 +115,7 @@
             headers: headers
         };
 
-        fetch("http:\/\/localhost:8081/handle",body)
+        fetch({{ index . "Address" }} + "/handle",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
@@ -149,7 +149,7 @@
             headers: headers
         };
 
-        fetch("http:\/\/localhost:8081/handle",body)
+        fetch({{ index . "Address" }} + "/handle",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
@@ -181,7 +181,7 @@
             headers: headers
         };
 
-        fetch("http:\/\/localhost:8081/log-grpc",body)
+        fetch({{ index . "Address" }} + "/log-grpc",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);

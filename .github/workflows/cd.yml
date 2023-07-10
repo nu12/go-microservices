@@ -13,8 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: |
+        export COMMIT=$(git rev-parse HEAD)
         echo ${{ secrets.TOKEN }} | docker login ghcr.io -u ${{github.actor}} --password-stdin
-        docker build -t ghcr.io/nu12/${{ matrix.service }}:latest -f ./${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
+        docker build --build-arg commit=$COMMIT -t ghcr.io/nu12/${{ matrix.service }}:latest -f ./${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
         docker push ghcr.io/nu12/${{ matrix.service }}:latest
-
-    

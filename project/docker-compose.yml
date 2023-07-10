@@ -5,6 +5,8 @@ services:
     build:
       context: ./../front-end
       dockerfile: ./../front-end/Dockerfile
+      args:
+        - commit=dev
     restart: always
     ports:
       - "8080:8080"
