@@ -15,7 +15,7 @@ func main() {
 		"Address": "http://localhost:8081",
 		"Commit":  os.Getenv("COMMIT"),
 	}
-	if remoteAddress, isSet := os.LookupEnv("ADDRESS"); isSet {
+	if remoteAddress, isSet := os.LookupEnv("BACKEND_ADDRESS"); isSet {
 		c["Address"] = remoteAddress
 	}
 

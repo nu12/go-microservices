@@ -1,0 +1,19 @@
+apiVersion: v2
+name: broker-service
+description: A Helm chart for Kubernetes
+
+dependencies:
+  - alias: front-end
+    name: front-end
+    version: "0.1.0"
+    repository: file://../../../front-end/charts/front-end
+  - alias: broker-service
+    name: broker-service
+    version: "0.1.0"
+    repository: file://../../../broker-service/charts/broker-service
+  - alias: rabbitmq
+    name: rabbitmq
+    version: "0.1.0"
+    repository: file://../../../broker-service/charts/rabbitmq
+
+version: 0.1.0

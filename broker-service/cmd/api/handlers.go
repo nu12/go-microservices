@@ -82,7 +82,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 		return
 	}
 
-	request, err := http.NewRequest("POST", "http://authentication:8080/authenticate", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", app.Env["authenticate"]+"/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -139,7 +139,7 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 		return
 	}
 
-	logServiceURL := "http://logger:8080/log"
+	logServiceURL := app.Env["logger"] + "/log"
 
 	request, err := http.NewRequest("POST", logServiceURL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -178,7 +178,7 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 		return
 	}
 
-	request, err := http.NewRequest("POST", "http://mailer:8080/send", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", app.Env["mailer"]+"/send", bytes.NewBuffer(jsonData))
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -247,7 +247,7 @@ type RPCPayload struct {
 }
 
 func (app *Config) logItemViaRPC(w http.ResponseWriter, payload LogPayload) {
-	client, err := rpc.Dial("tcp", "logger:5001")
+	client, err := rpc.Dial("tcp", app.Env["loggerrpc"])
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -282,7 +282,7 @@ func (app *Config) logItemViaGRPC(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := grpc.Dial("logger:50001", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.Dial(app.Env["loggergrpc"], grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		app.errorJSON(w, err)
 		return
