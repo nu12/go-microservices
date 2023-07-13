@@ -38,7 +38,9 @@ services:
       DSN: "host=postgres port=5432 user=postgres  password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
 
   postgres:
-    image: postgres:14.0
+    build:
+      context: ./../postgres
+      dockerfile: ./../postgres/Dockerfile
     restart: always
     ports:
       - "5432:5432"
@@ -51,7 +53,6 @@ services:
       - POSTGRES_DB=users
     volumes:
       - postgres:/var/lib/postgresql/data
-      - ./db-data/users.sql:/docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
     image: dpage/pgadmin4:6.14
@@ -88,7 +89,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongo:/data/db
-      - ./db-data/users.sql:/docker-entrypoint-initdb.d/init.sql
 
   mongo-express:
     image: mongo-express:1.0.0-alpha.4

@@ -62,7 +62,7 @@ func (app *Config) loadEnv() {
 	if s, isSet := os.LookupEnv("RABBITMQ_URL"); isSet {
 		app.Env["rabbitmq"] = s
 	}
-	log.Println(app.Env["rabbitmq"])
+
 	if s, isSet := os.LookupEnv("LOGGER_URL"); isSet {
 		app.Env["logger"] = s
 	}

@@ -23,6 +23,9 @@
 		},
 		{
 			"path": ".github"
+		},
+		{
+			"path": "postgres"
 		}
 	]
 }

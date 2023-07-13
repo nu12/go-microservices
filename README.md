@@ -58,5 +58,5 @@ broker-service:
 To deploy, run:
 
 ```bash
-helm install myapp charts/go-microservices --values my_values.yaml -n namespace
+helm install go charts/go-microservices --values my_values.yaml -n namespace
 ```
