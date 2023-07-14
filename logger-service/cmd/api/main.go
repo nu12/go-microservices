@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +17,6 @@ import (
 const (
 	webPort  = "0.0.0.0:8080"
 	rpcPort  = "0.0.0.0:5001"
-	mongodb  = "mongodb://mongo:27017"
 	gRpcPort = "0.0.0.0:50001"
 )
 
@@ -24,14 +24,21 @@ var client *mongo.Client
 
 type Config struct {
 	Models data.Models
+	Env    map[string]string
 }
 
 func main() {
-	mongoClient, err := connectToMongo()
+	app := Config{
+		Env: map[string]string{
+			"mongo": os.Getenv("MONGO_URL"),
+		},
+	}
+	mongoClient, err := app.connectToMongo()
 	if err != nil {
 		log.Panic(err)
 	}
 	client = mongoClient
+	app.Models = data.New(client)
 
 	// Close mongo connection
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -41,10 +48,6 @@ func main() {
 			log.Panic(err)
 		}
 	}()
-
-	app := Config{
-		Models: data.New(client),
-	}
 
 	err = rpc.Register(new(RPCServer))
 	if err != nil {
@@ -87,11 +90,11 @@ func (app *Config) rpcListen() error {
 	}
 }
 
-func connectToMongo() (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI(mongodb)
+func (app *Config) connectToMongo() (*mongo.Client, error) {
+	clientOptions := options.Client().ApplyURI(app.Env["mongo"])
 	clientOptions.SetAuth(options.Credential{
-		Username: "admin",
-		Password: "password",
+		Username: os.Getenv("MONGO_USER"),
+		Password: os.Getenv("MONGO_PASSWORD"),
 	})
 
 	c, err := mongo.Connect(context.TODO(), clientOptions)

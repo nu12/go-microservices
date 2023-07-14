@@ -71,6 +71,10 @@ services:
       context: ./../logger-service
       dockerfile: ./../logger-service/Dockerfile
     restart: always
+    environment:
+      MONGO_USER: admin
+      MONGO_PASSWORD: password
+      MONGO_URL: mongodb://mongo:27017
     deploy:
       mode: replicated
       replicas: 1

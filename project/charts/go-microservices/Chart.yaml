@@ -23,5 +23,13 @@ dependencies:
     name: postgres
     version: "0.1.0"
     repository: file://../../../authentication-service/charts/postgres
+  - alias: logger-service
+    name: logger-service
+    version: "0.1.0"
+    repository: file://../../../logger-service/charts/logger-service
+  - alias: mongo
+    name: mongo
+    version: "0.1.0"
+    repository: file://../../../logger-service/charts/mongo
 
 version: 0.1.0
