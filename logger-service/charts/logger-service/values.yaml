@@ -53,6 +53,8 @@ env:
     value: admin
   - name: MONGO_PASSWORD
     value: password
+  - name: MONGO_URL
+    value: mongodb://go-mongo:27017
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
