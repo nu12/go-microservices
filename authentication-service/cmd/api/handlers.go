@@ -59,7 +59,7 @@ func (app *Config) logRequest(name, data string) error {
 
 	jsonData, _ := json.MarshalIndent(entry, "", "\t")
 
-	request, err := http.NewRequest("POST", "http://logger:8080/log", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", app.Env["logger"], bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}

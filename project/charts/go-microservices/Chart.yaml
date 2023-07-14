@@ -15,5 +15,13 @@ dependencies:
     name: rabbitmq
     version: "0.1.0"
     repository: file://../../../broker-service/charts/rabbitmq
+  - alias: authentication-service
+    name: authentication-service
+    version: "0.1.0"
+    repository: file://../../../authentication-service/charts/authentication-service
+  - alias: postgres
+    name: postgres
+    version: "0.1.0"
+    repository: file://../../../authentication-service/charts/postgres
 
 version: 0.1.0

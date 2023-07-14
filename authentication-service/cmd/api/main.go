@@ -15,9 +15,11 @@ import (
 
 const webPort = "0.0.0.0:8080"
 
+// TODO: Create a struct for the Environment variables
 type Config struct {
 	DB     *sql.DB
 	Models data.Models
+	Env    map[string]string
 }
 
 func main() {
@@ -31,6 +33,11 @@ func main() {
 	app := Config{
 		DB:     conn,
 		Models: data.New(conn),
+		Env:    map[string]string{"logger": "http://logger:8080/log"},
+	}
+
+	if logger, isSet := os.LookupEnv("LOGGER_URL"); isSet {
+		app.Env["logger"] = logger
 	}
 
 	srv := http.Server{
