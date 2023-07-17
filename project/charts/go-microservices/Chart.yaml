@@ -31,5 +31,13 @@ dependencies:
     name: mongo
     version: "0.1.0"
     repository: file://../../../logger-service/charts/mongo
+  - alias: mailer-service
+    name: mailer-service
+    version: "0.1.0"
+    repository: file://../../../mailer-service/charts/mailer-service
+  - alias: mailhog
+    name: mailhog
+    version: "0.1.0"
+    repository: file://../../../mailer-service/charts/mailhog
 
 version: 0.1.0
