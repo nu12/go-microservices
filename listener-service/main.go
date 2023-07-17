@@ -3,6 +3,7 @@ package main
 import (
 	"listener/event"
 	"log"
+	"os"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -33,10 +34,14 @@ func connect() (*amqp.Connection, error) {
 	var counts int64
 	var backOff = 5 * time.Second
 	var connection *amqp.Connection
+	rabbitmq := "amqp://guest:guest@rabbitmq"
+	if s, isSet := os.LookupEnv("RABBITMQ_URL"); isSet {
+		rabbitmq = s
+	}
 
 	for {
 		log.Println("Dial ", counts)
-		c, err := amqp.Dial("amqp://guest:guest@rabbitmq")
+		c, err := amqp.Dial(rabbitmq)
 		if err != nil {
 			log.Println("Waiting RabbitMQ...")
 			counts++

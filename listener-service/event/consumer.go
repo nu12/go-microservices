@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -112,9 +113,12 @@ func logEvent(entry Payload) error {
 		return err
 	}
 
-	logServiceURL := "http://logger:8080/log"
+	logServiceURL := "http://logger:8080"
+	if s, isSet := os.LookupEnv("LOGGER_URL"); isSet {
+		logServiceURL = s
+	}
 
-	request, err := http.NewRequest("POST", logServiceURL, bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", logServiceURL+"/log", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -133,5 +137,6 @@ func logEvent(entry Payload) error {
 		return err
 	}
 
+	log.Println("Event sent to logger service")
 	return nil
 }
