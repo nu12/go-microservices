@@ -40,6 +40,7 @@ type MailPayload struct {
 	Message string `json:"message"`
 }
 
+// Marked for deletion
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Processing information")
 
@@ -52,6 +53,7 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Marked for deletion
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload RequestPayload
 	err := app.readJSON(w, r, &requestPayload)
@@ -75,6 +77,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Refactor to use gRPC
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	jsonData, err := json.MarshalIndent(a, "", "\t")
 	if err != nil {
@@ -171,6 +174,7 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 
 }
 
+// Refactor to use gRPC
 func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	jsonData, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
@@ -207,7 +211,6 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	app.writeJSON(w, http.StatusOK, payloadResponse)
 }
 
-// Unused since RPC implementation, kept here for reference
 func (app *Config) logEventViaRabbit(w http.ResponseWriter, entry LogPayload) {
 	err := app.pushToQueue(entry.Name, entry.Data)
 	if err != nil {
@@ -221,6 +224,7 @@ func (app *Config) logEventViaRabbit(w http.ResponseWriter, entry LogPayload) {
 
 	app.writeJSON(w, http.StatusOK, payloadResponse)
 }
+
 func (app *Config) pushToQueue(name, message string) error {
 	emitter, err := event.NewEventEmitter(app.Rabbit)
 	if err != nil {
@@ -241,11 +245,13 @@ func (app *Config) pushToQueue(name, message string) error {
 
 }
 
+// Marked for deletion
 type RPCPayload struct {
 	Name string
 	Data string
 }
 
+// Marked for deletion
 func (app *Config) logItemViaRPC(w http.ResponseWriter, payload LogPayload) {
 	client, err := rpc.Dial("tcp", app.Env["loggerrpc"])
 	if err != nil {
@@ -272,6 +278,7 @@ func (app *Config) logItemViaRPC(w http.ResponseWriter, payload LogPayload) {
 	app.writeJSON(w, http.StatusOK, payloadResponse)
 }
 
+// Marked for deletion
 func (app *Config) logItemViaGRPC(w http.ResponseWriter, r *http.Request) {
 
 	var requestPayload RequestPayload
