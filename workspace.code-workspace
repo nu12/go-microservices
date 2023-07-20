@@ -19,9 +19,6 @@
 			"path": "mailer-service"
 		},
 		{
-			"path": "listener-service"
-		},
-		{
 			"path": ".github"
 		},
 		{

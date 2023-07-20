@@ -24,14 +24,9 @@ func (app *Config) routes() http.Handler {
 
 	mux.Use(middleware.Heartbeat("/ping"))
 
-	// Routes marked for deletion
-	mux.Post("/", app.Broker)
-	mux.Post("/handle", app.HandleSubmission)
-	mux.Post("/log-grpc", app.logItemViaGRPC)
-
-	mux.Post("/authenticate", nil)
-	mux.Post("/mail", nil)
-	mux.Post("/log", nil)
+	mux.Post("/authenticate", app.Authenticate)
+	mux.Post("/mail", app.SendMail)
+	mux.Post("/log", app.Log)
 
 	return mux
 }

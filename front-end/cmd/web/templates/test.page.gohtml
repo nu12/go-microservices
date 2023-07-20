@@ -18,13 +18,53 @@
                 </ul>
                 <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                        <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Auth</a>
+                        <form>
+                            <h2>Authentication form</h2>
+                            <div class="mb-3">
+                                <label for="authEmail" class="form-label">Email address</label>
+                                <input id="authEmail" class="form-control" type="email" placeholder="admin@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="authPassword" class="form-label">Email address</label>
+                                <input id="authPassword"  class="form-control" type="password" placeholder="verysecret" />
+                            </div>
+                            
+                            <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Auth</a>
+                        </form>
                     </div>
                     <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                        <a id="logGRPCBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log with gRPC</a>
+                        <form>
+                            <h2>Logging form</h2>
+                            <div class="mb-3">
+                                <label for="logMsg" class="form-label">Message to log</label>
+                                <input id="logMsg" class="form-control" type="text" value="Logging via RabbitMQ" />
+                            </div>
+                            <a id="logBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log</a>
+                        </form>
+                        
                     </div>
                     <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                         <a id="mailBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Mail</a>
+                        <form>
+                            <h2>Mail form</h2>
+                            <div class="mb-3">
+                                <label for="fromMail" class="form-label">From</label>
+                                <input id="fromMail" class="form-control" type="email" value="me@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="toMail" class="form-label">To</label>
+                                <input id="toMail" class="form-control" type="email" value="you@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="subjectMail" class="form-label">Subject</label>
+                                <input id="subjectMail" class="form-control" type="text" value="Subject" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="messageMail" class="form-label">Message</label>
+                                <input id="messageMail" class="form-control" type="text" value="Message" />
+                            </div>
+                            <a id="mailBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Mail</a>
+                        </form>
+                         
 
                     </div>
                 </div>
@@ -56,7 +96,7 @@
     <script>
 
     let authBrokerBtn = document.getElementById("authBrokerBtn");
-    let logGRPCBtn = document.getElementById("logGRPCBtn");
+    let logBtn = document.getElementById("logBtn");
     let mailBtn = document.getElementById("mailBtn");
     
     let output = document.getElementById("output");
@@ -67,8 +107,8 @@
         const payload = {
             action: 'auth',
             auth: {
-                email: "admin@example.com",
-                password: "verysecret"
+                email: document.getElementById("authEmail").value,
+                password: document.getElementById("authPassword").value
             }
         };
 
@@ -101,10 +141,10 @@
         const payload = {
             action: 'mail',
             mail: {
-                from: "me@example.com",
-                to: "you@example.com",
-                subject: "Email test",
-                message: "Hello World!"
+                from: document.getElementById("fromMail").value,
+                to: document.getElementById("toMail").value,
+                subject: document.getElementById("subjectMail").value,
+                message: document.getElementById("messageMail").value
             }
         };
 
@@ -131,12 +171,12 @@
         .catch((error) => console.log(error));
     })
 
-    logGRPCBtn.addEventListener("click", function(){
+    logBtn.addEventListener("click", function(){
         const payload = {
             action: 'log',
             log: {
                 name: "log ",
-                data: "gRPC log data goes here"
+                data: document.getElementById("logMsg").value
             }
         };
 

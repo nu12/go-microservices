@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,16 +20,8 @@ type Config struct {
 func main() {
 
 	app := Config{
-		Env: map[string]string{
-			"rabbitmq":     "amqp://guest:guest@rabbitmq",
-			"authenticate": "http://authentication:8080",
-			"logger":       "http://logger:8080",
-			"mailer":       "http://mailer:8080",
-			"loggerrpc":    "logger:5001",
-			"loggergrpc":   "logger:50001",
-		},
+		Env: map[string]string{},
 	}
-
 	app.loadEnv()
 
 	rabbitConn, err := app.connect()
@@ -55,30 +48,13 @@ func main() {
 }
 
 func (app *Config) loadEnv() {
-	if s, isSet := os.LookupEnv("AUTHENTICATE_URL"); isSet {
-		app.Env["authenticate"] = s
+	for _, v := range []string{"RABBITMQ_URL", "AUTHENTICATION_GRPC_SERVER"} {
+		env, isSet := os.LookupEnv(v)
+		if !isSet {
+			log.Panicln(fmt.Sprintf("Cannot load environment variable %s", v))
+		}
+		app.Env[v] = env
 	}
-
-	if s, isSet := os.LookupEnv("RABBITMQ_URL"); isSet {
-		app.Env["rabbitmq"] = s
-	}
-
-	if s, isSet := os.LookupEnv("LOGGER_URL"); isSet {
-		app.Env["logger"] = s
-	}
-
-	if s, isSet := os.LookupEnv("LOGGER_RPC_URL"); isSet {
-		app.Env["loggerrpc"] = s
-	}
-
-	if s, isSet := os.LookupEnv("LOGGER_GRPC_URL"); isSet {
-		app.Env["loggergrpc"] = s
-	}
-
-	if s, isSet := os.LookupEnv("MAILER_URL"); isSet {
-		app.Env["mailer"] = s
-	}
-
 }
 
 func (app *Config) connect() (*amqp.Connection, error) {
@@ -88,7 +64,7 @@ func (app *Config) connect() (*amqp.Connection, error) {
 
 	for {
 		log.Println("Dial ", counts)
-		c, err := amqp.Dial(app.Env["rabbitmq"])
+		c, err := amqp.Dial(app.Env["RABBITMQ_URL"])
 		if err != nil {
 			log.Println("Waiting RabbitMQ...")
 			counts++

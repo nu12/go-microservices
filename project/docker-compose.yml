@@ -21,6 +21,9 @@ services:
       context: ./../broker-service
       dockerfile: ./../broker-service/Dockerfile
     restart: always
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
+      AUTHENTICATION_GRPC_SERVER: "authentication:50001"
     ports:
       - "8081:8080"
     deploy:
@@ -131,15 +134,6 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
-
-  listener:
-    build:
-      context: ./../listener-service
-      dockerfile: ./../listener-service/Dockerfile
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
 
   rabbitmq:
     image: rabbitmq:3.9.14-alpine
