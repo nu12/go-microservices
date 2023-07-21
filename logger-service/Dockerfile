@@ -13,6 +13,4 @@ WORKDIR /app
 
 COPY --from=builder /app/logger /app/logger
 
-EXPOSE 8080
-
 ENTRYPOINT ["./logger"]

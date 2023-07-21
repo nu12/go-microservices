@@ -13,6 +13,6 @@ WORKDIR /app
 
 COPY --from=builder /app/authentication /app/authentication
 
-EXPOSE 8080
+EXPOSE 50001
 
 ENTRYPOINT ["./authentication"]

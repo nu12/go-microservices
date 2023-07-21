@@ -105,7 +105,7 @@ func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
 
 	var payloadResponse jsonResponse
 	payloadResponse.Error = false
-	payloadResponse.Message = "To be implemented"
+	payloadResponse.Message = "Email sent successfully"
 
 	app.writeJSON(w, http.StatusOK, payloadResponse)
 }

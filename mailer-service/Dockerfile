@@ -14,6 +14,4 @@ WORKDIR /app
 COPY --from=builder /app/mailer /app/mailer
 COPY --from=builder /app/templates/ /app/templates/
 
-EXPOSE 8080
-
 ENTRYPOINT ["./mailer"]
