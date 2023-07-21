@@ -49,6 +49,8 @@ grpc:
   port: 50001
 
 env:
+  - name: RABBITMQ_URL
+    value: "amqp://guest:guest@go-rabbitmq"
   - name: MONGO_USER
     value: admin
   - name: MONGO_PASSWORD
