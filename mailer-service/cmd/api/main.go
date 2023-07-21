@@ -54,6 +54,7 @@ func main() {
 	}()
 
 	log.Println("Waiting for messages")
+	os.WriteFile("/tmp/readyz", []byte(""), 0644)
 	<-forever
 
 }

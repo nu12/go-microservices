@@ -38,13 +38,15 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            exec:
+              command:
+              - cat
+              - /tmp/healthy
           readinessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            exec:
+              command:
+              - cat
+              - /tmp/healthy
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
