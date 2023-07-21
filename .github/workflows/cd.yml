@@ -3,13 +3,14 @@ on:
   push:
     branches:
     - main
+    - refactor
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [listener-service, mailer-service, logger-service, authentication-service, broker-service, front-end, postgres]
+        service: [mailer-service, logger-service, authentication-service, broker-service, front-end, postgres]
     steps:
     - uses: actions/checkout@v3
     - run: |

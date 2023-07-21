@@ -39,9 +39,5 @@ dependencies:
     name: mailhog
     version: "0.1.0"
     repository: file://../../../mailer-service/charts/mailhog
-  - alias: listener-service
-    name: listener-service
-    version: "0.1.0"
-    repository: file://../../../listener-service/charts/listener-service
 
 version: 0.1.0

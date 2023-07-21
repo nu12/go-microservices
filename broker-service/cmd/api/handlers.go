@@ -85,7 +85,23 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 // Refactor to use amqp
 func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
-	//TODO: get entry from request, marchal and pass to pushToQueue as string
+	log.Println("Processing mail request")
+
+	var requestPayload RequestPayload
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		log.Println("Error: ", err)
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	mail := requestPayload.Mail
+	err = app.pushToQueue("mails_topic", mail)
+	if err != nil {
+		log.Println("Error: ", err)
+		app.errorJSON(w, err)
+		return
+	}
 
 	var payloadResponse jsonResponse
 	payloadResponse.Error = false

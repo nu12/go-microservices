@@ -1,34 +1,61 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-const webPort = "0.0.0.0:8080"
-
 type Config struct {
-	Mailer Mail
+	Mailer           Mail
+	RabbitConnection *amqp.Connection
+	RabbitChannel    *amqp.Channel
 }
 
 func main() {
+	log.Println("Starting mailer service")
+
+	for _, env := range []string{"RABBITMQ_URL", "MAIL_PORT", "MAIL_DOMAIN", "MAIL_HOST", "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_ENCRYPTION", "MAIL_FROM_NAME", "MAIL_FROM_ADDRESS"} {
+		if _, isSet := os.LookupEnv(env); !isSet {
+			log.Panicln(fmt.Sprintf("Variable %s not found", env))
+		}
+	}
 
 	app := Config{
 		Mailer: createMail(),
 	}
 
-	srv := http.Server{
-		Addr:    webPort,
-		Handler: app.routes(),
-	}
-
-	log.Println("Starting service")
-	err := srv.ListenAndServe()
+	msgStream, err := app.setupRabbitMQ()
 	if err != nil {
 		log.Panic(err)
 	}
+	defer app.RabbitConnection.Close()
+	defer app.RabbitChannel.Close()
+
+	var forever chan struct{}
+	go func() {
+		for d := range msgStream {
+			var entry MailMessage
+			err = json.Unmarshal(d.Body, &entry)
+			if err != nil {
+				log.Println("Error: ", err)
+				return
+			}
+			err = app.SendMail(entry)
+			if err != nil {
+				log.Println("Error: ", err)
+			}
+		}
+	}()
+
+	log.Println("Waiting for messages")
+	<-forever
+
 }
 
 func createMail() Mail {
@@ -45,4 +72,65 @@ func createMail() Mail {
 	}
 
 	return m
+}
+
+func (app *Config) setupRabbitMQ() (<-chan amqp.Delivery, error) {
+	conn, err := app.connectRabbitMQ()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	q, err := ch.QueueDeclare(
+		"mails_topic", // name
+		false,         // durable
+		false,         // delete when unused
+		false,         // exclusive
+		false,         // no-wait
+		nil,           // arguments
+	)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+}
+
+func (app *Config) connectRabbitMQ() (*amqp.Connection, error) {
+	var counts int64
+	var backOff = 5 * time.Second
+	var connection *amqp.Connection
+
+	for {
+		log.Println("Dial ", counts)
+		c, err := amqp.Dial(os.Getenv("RABBITMQ_URL"))
+		if err != nil {
+			log.Println("Waiting RabbitMQ...")
+			counts++
+		} else {
+			connection = c
+			break
+		}
+
+		if counts > 10 {
+			return nil, err
+		}
+
+		time.Sleep(backOff)
+		continue
+	}
+
+	return connection, nil
 }

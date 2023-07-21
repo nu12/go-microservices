@@ -118,6 +118,7 @@ services:
       dockerfile: ./../mailer-service/Dockerfile
     restart: always
     environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
       MAIL_DOMAIN: localhost
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
@@ -140,8 +141,6 @@ services:
     image: rabbitmq:3.9.14-alpine
     ports:
       - "5672:5672"
-      - "15672:15672"
-      - "15671:15671"
     deploy:
       mode: replicated
       replicas: 1

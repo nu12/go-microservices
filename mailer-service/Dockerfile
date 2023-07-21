@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o mailer cmd/api/main.go cmd/api/routes.go  cmd/api/handlers.go cmd/api/helpers.go cmd/api/mailer.go 
+RUN go build -o mailer cmd/api/main.go  cmd/api/handlers.go cmd/api/mailer.go 
 
 FROM alpine:latest 
 LABEL org.opencontainers.image.source https://github.com/nu12/go-microservices

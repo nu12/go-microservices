@@ -13,7 +13,7 @@ func (app *Config) pushToQueue(topicName string, data interface{}) error {
 
 	ch, err := app.Rabbit.Channel()
 	if err != nil {
-		log.Println("Error 1")
+		log.Println("Error getting channel")
 		return err
 	}
 	defer ch.Close()
@@ -27,7 +27,7 @@ func (app *Config) pushToQueue(topicName string, data interface{}) error {
 		nil,       // arguments
 	)
 	if err != nil {
-		log.Println("Error 1")
+		log.Println("Error declaring queue")
 		return err
 	}
 
@@ -36,7 +36,7 @@ func (app *Config) pushToQueue(topicName string, data interface{}) error {
 
 	j, err := json.MarshalIndent(&data, "", "\t")
 	if err != nil {
-		log.Println("Error 3")
+		log.Println("Error creating JSON")
 		return err
 	}
 	err = ch.PublishWithContext(ctx,
@@ -50,10 +50,10 @@ func (app *Config) pushToQueue(topicName string, data interface{}) error {
 		})
 
 	if err != nil {
-		log.Println("Error 4")
+		log.Println("Error publishing to queue")
 		return err
 	}
-	log.Println("Message sent to queue. Topic: ", topicName)
+	log.Println("Message sent to queue. Topic:", topicName)
 
 	return nil
 
