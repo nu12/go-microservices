@@ -1,10 +1,8 @@
 package main
 
 import (
-	"broker/event"
 	"broker/grpc/authentication"
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -37,7 +35,6 @@ type MailPayload struct {
 	Message string `json:"message"`
 }
 
-// Refactor to use gRPC
 func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	log.Println("Processing authentication request")
 
@@ -82,11 +79,13 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	payload.Message = "Login successful!"
 	//payload.Data = jsonFromService.Data
 
+	_ = app.pushToQueue("logs_topic", LogPayload{Name: "auth", Data: "Authentication success"})
 	app.writeJSON(w, http.StatusOK, payload)
 }
 
 // Refactor to use amqp
 func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
+	//TODO: get entry from request, marchal and pass to pushToQueue as string
 
 	var payloadResponse jsonResponse
 	payloadResponse.Error = false
@@ -96,11 +95,20 @@ func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Config) Log(w http.ResponseWriter, r *http.Request) {
-	//TODO: get entry from request
-	entry := LogPayload{Name: "", Data: ""}
+	log.Println("Processing log request")
 
-	err := app.pushToQueue(entry.Name, entry.Data)
+	var requestPayload RequestPayload
+	err := app.readJSON(w, r, &requestPayload)
 	if err != nil {
+		log.Println("Error: ", err)
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	entry := requestPayload.Log
+	err = app.pushToQueue("logs_topic", entry)
+	if err != nil {
+		log.Println("Error: ", err)
 		app.errorJSON(w, err)
 		return
 	}
@@ -110,24 +118,4 @@ func (app *Config) Log(w http.ResponseWriter, r *http.Request) {
 	payloadResponse.Message = "Logged via RabbitMQ"
 
 	app.writeJSON(w, http.StatusOK, payloadResponse)
-}
-
-func (app *Config) pushToQueue(name, message string) error {
-	emitter, err := event.NewEventEmitter(app.Rabbit)
-	if err != nil {
-		return err
-	}
-
-	payload := LogPayload{
-		Name: name,
-		Data: message,
-	}
-
-	j, _ := json.MarshalIndent(&payload, "", "\t")
-	err = emitter.Push(string(j), "log.INFO")
-	if err != nil {
-		return err
-	}
-	return nil
-
 }

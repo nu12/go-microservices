@@ -2,99 +2,99 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"logger/data"
-	"net"
-	"net/http"
-	"net/rpc"
 	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
 
-const (
-	webPort  = "0.0.0.0:8080"
-	rpcPort  = "0.0.0.0:5001"
-	gRpcPort = "0.0.0.0:50001"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var client *mongo.Client
 
 type Config struct {
-	Models data.Models
-	Env    map[string]string
+	Models           data.Models
+	MongoClient      *mongo.Client
+	RabbitConnection *amqp.Connection
+	RabbitChannel    *amqp.Channel
+	Env              map[string]string
 }
 
 func main() {
 	app := Config{
-		Env: map[string]string{
-			"mongo": os.Getenv("MONGO_URL"),
-		},
+		Env: map[string]string{},
 	}
-	mongoClient, err := app.connectToMongo()
+	app.setupEnv()
+
+	err := app.setupMongoDB()
 	if err != nil {
 		log.Panic(err)
 	}
-	client = mongoClient
-	app.Models = data.New(client)
-
 	// Close mongo connection
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
+		if err = app.MongoClient.Disconnect(ctx); err != nil {
 			log.Panic(err)
 		}
 	}()
 
-	err = rpc.Register(new(RPCServer))
+	msgStream, err := app.setupRabbitMQ()
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Println("Starting RPC service")
-	go app.rpcListen()
-	log.Println("Starting gRPC service")
-	go app.gRPCListen()
+	defer app.RabbitConnection.Close()
+	defer app.RabbitChannel.Close()
 
-	log.Println("Starting logging service")
-	srv := http.Server{
-		Addr:    webPort,
-		Handler: app.routes(),
-	}
+	var forever chan struct{}
+	go func() {
+		for d := range msgStream {
+			var entry data.LogEntry
+			err = json.Unmarshal(d.Body, &entry)
+			if err != nil {
+				log.Println("Error: ", err)
+				return
+			}
+			app.WriteLog(entry)
+		}
+	}()
 
-	err = srv.ListenAndServe()
-	if err != nil {
-		log.Panic(err)
-	}
-
+	log.Println("Waiting for messages")
+	<-forever
 }
 
-func (app *Config) rpcListen() error {
-	log.Println("Starting RPC server")
-	listen, err := net.Listen("tcp", rpcPort)
+func (app *Config) setupEnv() {
+	for _, env := range []string{"RABBITMQ_URL", "MONGO_URL", "MONGO_USER", "MONGO_PASSWORD"} {
+		val, isSet := os.LookupEnv(env)
+		if !isSet {
+			log.Panicln(fmt.Sprintf("Variable %s not found", env))
+		}
+		app.Env[env] = val
+	}
+}
+
+func (app *Config) setupMongoDB() error {
+	mongoClient, err := app.connectToMongo()
 	if err != nil {
 		return err
 	}
+	client = mongoClient
+	app.Models = data.New(client)
+	app.MongoClient = client
 
-	defer listen.Close()
-
-	for {
-		rpcConn, err := listen.Accept()
-		if err != nil {
-			return err
-		}
-
-		go rpc.ServeConn(rpcConn)
-	}
+	return nil
 }
 
 func (app *Config) connectToMongo() (*mongo.Client, error) {
-	clientOptions := options.Client().ApplyURI(app.Env["mongo"])
+	clientOptions := options.Client().ApplyURI(app.Env["MONGO_URL"])
 	clientOptions.SetAuth(options.Credential{
-		Username: os.Getenv("MONGO_USER"),
-		Password: os.Getenv("MONGO_PASSWORD"),
+		Username: app.Env["MONGO_USER"],
+		Password: app.Env["MONGO_PASSWORD"],
 	})
 
 	c, err := mongo.Connect(context.TODO(), clientOptions)
@@ -103,4 +103,65 @@ func (app *Config) connectToMongo() (*mongo.Client, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+func (app *Config) setupRabbitMQ() (<-chan amqp.Delivery, error) {
+	conn, err := app.connectRabbitMQ()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	q, err := ch.QueueDeclare(
+		"logs_topic", // name
+		false,        // durable
+		false,        // delete when unused
+		false,        // exclusive
+		false,        // no-wait
+		nil,          // arguments
+	)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+}
+
+func (app *Config) connectRabbitMQ() (*amqp.Connection, error) {
+	var counts int64
+	var backOff = 5 * time.Second
+	var connection *amqp.Connection
+
+	for {
+		log.Println("Dial ", counts)
+		c, err := amqp.Dial(app.Env["RABBITMQ_URL"])
+		if err != nil {
+			log.Println("Waiting RabbitMQ...")
+			counts++
+		} else {
+			connection = c
+			break
+		}
+
+		if counts > 10 {
+			return nil, err
+		}
+
+		time.Sleep(backOff)
+		continue
+	}
+
+	return connection, nil
 }

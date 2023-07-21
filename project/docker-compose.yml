@@ -78,6 +78,7 @@ services:
       dockerfile: ./../logger-service/Dockerfile
     restart: always
     environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
       MONGO_USER: admin
       MONGO_PASSWORD: password
       MONGO_URL: mongodb://mongo:27017
@@ -139,6 +140,8 @@ services:
     image: rabbitmq:3.9.14-alpine
     ports:
       - "5672:5672"
+      - "15672:15672"
+      - "15671:15671"
     deploy:
       mode: replicated
       replicas: 1

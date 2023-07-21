@@ -18,33 +18,24 @@ type Config struct {
 }
 
 func main() {
-
+	log.Printf("Starting Broker service")
 	app := Config{
 		Env: map[string]string{},
 	}
 	app.loadEnv()
+	app.setupRabbitMQ()
+	defer app.Rabbit.Close()
 
-	rabbitConn, err := app.connect()
-	if err != nil {
-		log.Panicln("Cannot connect to RabbitMQ", err)
-	}
-
-	app.Rabbit = rabbitConn
-
-	defer rabbitConn.Close()
-	log.Println("Connected to RabbitMQ")
-
-	log.Printf("Starting Broker service on port %s\n", addr)
+	log.Printf("Starting Broker server on port %s\n", addr)
 
 	server := http.Server{
 		Addr:    addr,
 		Handler: app.routes(),
 	}
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func (app *Config) loadEnv() {
@@ -57,7 +48,17 @@ func (app *Config) loadEnv() {
 	}
 }
 
-func (app *Config) connect() (*amqp.Connection, error) {
+func (app *Config) setupRabbitMQ() {
+	rabbitConn, err := app.connectRabbitMQ()
+	if err != nil {
+		log.Panicln("Cannot connect to RabbitMQ", err)
+	}
+
+	app.Rabbit = rabbitConn
+	log.Println("Connected to RabbitMQ")
+}
+
+func (app *Config) connectRabbitMQ() (*amqp.Connection, error) {
 	var counts int64
 	var backOff = 5 * time.Second
 	var connection *amqp.Connection
