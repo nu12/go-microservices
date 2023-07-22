@@ -36,18 +36,6 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
-  type: ClusterIP
-  port: 8080
-
-rpc:
-  type: ClusterIP
-  port: 5001
-
-grpc:
-  type: ClusterIP
-  port: 50001
-
 env:
   - name: RABBITMQ_URL
     value: "amqp://guest:guest@go-rabbitmq"

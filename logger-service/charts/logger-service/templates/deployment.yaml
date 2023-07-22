@@ -35,16 +35,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             {{- toYaml .Values.env | nindent 12 }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-            - name: rpc
-              containerPort: {{ .Values.rpc.port }}
-              protocol: TCP
-            - name: grpc
-              containerPort: {{ .Values.grpc.port }}
-              protocol: TCP
           livenessProbe:
             exec:
               command:
