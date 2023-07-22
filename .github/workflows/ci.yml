@@ -1,6 +1,6 @@
 name: Build images
 on:
-  push:
+  pull_request:
     branches:
     - main
 
@@ -16,4 +16,3 @@ jobs:
         export COMMIT=$(git rev-parse HEAD)
         echo ${{ secrets.TOKEN }} | docker login ghcr.io -u ${{github.actor}} --password-stdin
         docker build --build-arg commit=$COMMIT -t ghcr.io/nu12/${{ matrix.service }}:latest -f ./${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
-        docker push ghcr.io/nu12/${{ matrix.service }}:latest
