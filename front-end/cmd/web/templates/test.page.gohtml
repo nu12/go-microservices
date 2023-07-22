@@ -5,13 +5,71 @@
         <div class="row">
             <div class="col">
                 <h1 class="mt-5">Test microservices</h1>
-                <hr>
-                <a id="brokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Broker</a>
-                <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Auth</a>
-                <a id="logBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log</a>
-                <a id="logGRPCBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log with gRPC</a>
-                <a id="mailBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Mail</a>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Authenticate</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Send log</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Send mail</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <form>
+                            <h2>Authentication form</h2>
+                            <div class="mb-3">
+                                <label for="authEmail" class="form-label">Email address</label>
+                                <input id="authEmail" class="form-control" type="email" value="admin@example.com" placeholder="admin@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="authPassword" class="form-label">Email address</label>
+                                <input id="authPassword"  class="form-control" type="password" value="verysecret" placeholder="verysecret" />
+                            </div>
+                            
+                            <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Auth</a>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <form>
+                            <h2>Logging form</h2>
+                            <div class="mb-3">
+                                <label for="logMsg" class="form-label">Message to log</label>
+                                <input id="logMsg" class="form-control" type="text" value="Logging via RabbitMQ" />
+                            </div>
+                            <a id="logBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log</a>
+                        </form>
+                        
+                    </div>
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        <form>
+                            <h2>Mail form</h2>
+                            <div class="mb-3">
+                                <label for="fromMail" class="form-label">From</label>
+                                <input id="fromMail" class="form-control" type="email" value="me@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="toMail" class="form-label">To</label>
+                                <input id="toMail" class="form-control" type="email" value="you@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="subjectMail" class="form-label">Subject</label>
+                                <input id="subjectMail" class="form-control" type="text" value="Subject" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="messageMail" class="form-label">Message</label>
+                                <input id="messageMail" class="form-control" type="text" value="Message" />
+                            </div>
+                            <a id="mailBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Mail</a>
+                        </form>
+                         
 
+                    </div>
+                </div>
+                <hr>
+                
                 <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
                     <span class="text-muted">Output shows here...</span>
                 </div>
@@ -36,10 +94,9 @@
 
 {{define "js"}}
     <script>
-    let brokerBtn = document.getElementById("brokerBtn");
+
     let authBrokerBtn = document.getElementById("authBrokerBtn");
     let logBtn = document.getElementById("logBtn");
-    let logGRPCBtn = document.getElementById("logGRPCBtn");
     let mailBtn = document.getElementById("mailBtn");
     
     let output = document.getElementById("output");
@@ -50,8 +107,8 @@
         const payload = {
             action: 'auth',
             auth: {
-                email: "admin@example.com",
-                password: "verysecret"
+                email: document.getElementById("authEmail").value,
+                password: document.getElementById("authPassword").value
             }
         };
 
@@ -64,34 +121,51 @@
             headers: headers
         };
 
-        fetch({{ index . "Address" }} + "/handle",body)
+        fetch({{ index . "BACKEND_ADDRESS" }} + "/authenticate",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                output.innerHTML += "<p>Error: " + data.message + "</p>";
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Response from broker: " + data.message + "</p>";
+                // Set token here!
             }
         })
         .catch((error) => console.log(error));
     })
 
-    brokerBtn.addEventListener("click", function(){
+
+    mailBtn.addEventListener("click", function(){
+        const payload = {
+            action: 'mail',
+            mail: {
+                from: document.getElementById("fromMail").value,
+                to: document.getElementById("toMail").value,
+                subject: document.getElementById("subjectMail").value,
+                message: document.getElementById("messageMail").value
+            }
+        };
+
+        const headers = new Headers();
+        headers.append("Content-Type","application/json");
+
         const body = {
-            method: 'POST',
-        }
-    
-        fetch({{ index . "Address" }},body)
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: headers
+        };
+
+        fetch({{ index . "BACKEND_ADDRESS" }} + "/mail",body)
         .then((response) => response.json())
         .then((data) => {
-            sent.innerHTML ="empty post request";
+            sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                console.log(data.message);
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));
@@ -102,7 +176,7 @@
             action: 'log',
             log: {
                 name: "log ",
-                data: "Log data goes here"
+                data: document.getElementById("logMsg").value
             }
         };
 
@@ -115,81 +189,15 @@
             headers: headers
         };
 
-        fetch({{ index . "Address" }} + "/handle",body)
+        fetch({{ index . "BACKEND_ADDRESS" }} + "/log",body)
         .then((response) => response.json())
         .then((data) => {
             sent.innerHTML = JSON.stringify(payload, undefined, 4);
             received.innerHTML = JSON.stringify(data,undefined, 4);
             if (data.error) {
-                output.innerHTML += "<p>Error: " + data.message + "</p>";
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Error: " + data.message + "</p>";
             }else{
-                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
-            }
-        })
-        .catch((error) => console.log(error));
-    })
-
-    mailBtn.addEventListener("click", function(){
-        const payload = {
-            action: 'mail',
-            mail: {
-                from: "me@example.com",
-                to: "you@example.com",
-                subject: "Email test",
-                message: "Hello World!"
-            }
-        };
-
-        const headers = new Headers();
-        headers.append("Content-Type","application/json");
-
-        const body = {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: headers
-        };
-
-        fetch({{ index . "Address" }} + "/handle",body)
-        .then((response) => response.json())
-        .then((data) => {
-            sent.innerHTML = JSON.stringify(payload, undefined, 4);
-            received.innerHTML = JSON.stringify(data,undefined, 4);
-            if (data.error) {
-                output.innerHTML += "<p>Error: " + data.message + "</p>";
-            }else{
-                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
-            }
-        })
-        .catch((error) => console.log(error));
-    })
-
-    logGRPCBtn.addEventListener("click", function(){
-        const payload = {
-            action: 'log',
-            log: {
-                name: "log ",
-                data: "gRPC log data goes here"
-            }
-        };
-
-        const headers = new Headers();
-        headers.append("Content-Type","application/json");
-
-        const body = {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: headers
-        };
-
-        fetch({{ index . "Address" }} + "/log-grpc",body)
-        .then((response) => response.json())
-        .then((data) => {
-            sent.innerHTML = JSON.stringify(payload, undefined, 4);
-            received.innerHTML = JSON.stringify(data,undefined, 4);
-            if (data.error) {
-                output.innerHTML += "<p>Error: " + data.message + "</p>";
-            }else{
-                output.innerHTML += "<p>Response from broker: " + data.message + "</p>";
+                output.innerHTML = "<p>Timestamp: " + Date.now() + "<br />Response from broker: " + data.message + "</p>";
             }
         })
         .catch((error) => console.log(error));

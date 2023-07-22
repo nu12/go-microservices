@@ -33,18 +33,16 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             {{- toYaml .Values.env | nindent 12 }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            exec:
+              command:
+              - cat
+              - /tmp/readyz
           readinessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            exec:
+              command:
+              - cat
+              - /tmp/readyz
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

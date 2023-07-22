@@ -40,13 +40,11 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            tcpSocket:
+              port: 50001
           readinessProbe:
-            httpGet:
-              path: /ping
-              port: http
+            tcpSocket:
+              port: 50001
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

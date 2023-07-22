@@ -34,11 +34,9 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
-  type: ClusterIP
-  port: 8080
-
 env:
+  - name: RABBITMQ_URL
+    value: "amqp://guest:guest@go-rabbitmq"
   - name: MAIL_DOMAIN
     value: "localhost"
   - name: MAIL_HOST

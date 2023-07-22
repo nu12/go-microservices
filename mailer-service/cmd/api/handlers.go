@@ -1,40 +1,29 @@
 package main
 
-import "net/http"
+import "log"
 
-func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
-	type mailMessage struct {
-		From    string `json:"from"`
-		To      string `json:"to"`
-		Subject string `json:"subject"`
-		Message string `json:"message"`
-	}
+type MailMessage struct {
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
+}
 
-	var requestPayload mailMessage
-
-	err := app.readJSON(w, r, &requestPayload)
-	if err != nil {
-		app.errorJSON(w, err, http.StatusBadRequest)
-		return
-	}
+func (app *Config) SendMail(data MailMessage) error {
+	log.Println("Sending email")
 
 	msg := Message{
-		From:    requestPayload.From,
-		To:      requestPayload.To,
-		Subject: requestPayload.Subject,
-		Data:    requestPayload.Message,
+		From:    data.From,
+		To:      data.To,
+		Subject: data.Subject,
+		Data:    data.Message,
 	}
 
-	err = app.Mailer.SendSMTPMessage(msg)
+	err := app.Mailer.SendSMTPMessage(msg)
 	if err != nil {
-		app.errorJSON(w, err, http.StatusBadRequest)
-		return
+		return err
 	}
 
-	payload := jsonResponse{
-		Error:   false,
-		Message: "sent to " + requestPayload.To,
-	}
-
-	app.writeJSON(w, http.StatusOK, payload)
+	log.Println("Email sent successfully")
+	return nil
 }

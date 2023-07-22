@@ -71,16 +71,8 @@ resources: {}
 env:
   - name: RABBITMQ_URL
     value: "amqp://guest:guest@go-rabbitmq"
-  - name: AUTHENTICATE_URL
-    value: "http://go-authentication-service:8080"
-  - name: LOGGER_URL
-    value: "http://go-logger-service:8080"
-  - name: LOGGER_RPC_URL
-    value: "go-logger-service:5001"
-  - name: LOGGER_GRPC_URL
-    value: "go-logger-service:50001"
-  - name: MAILER_URL
-    value: "http://go-mailer-service:8080"
+  - name: AUTHENTICATION_GRPC_SERVER
+    value: "go-authentication-service:50001"
 
 autoscaling:
   enabled: false

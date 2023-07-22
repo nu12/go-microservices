@@ -8,6 +8,9 @@ services:
       args:
         - commit=dev
     restart: always
+    environment:
+      BACKEND_ADDRESS: "http://localhost:8081"
+      COMMIT: docker-compose
     ports:
       - "8080:8080"
     deploy:
@@ -18,6 +21,9 @@ services:
       context: ./../broker-service
       dockerfile: ./../broker-service/Dockerfile
     restart: always
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
+      AUTHENTICATION_GRPC_SERVER: "authentication:50001"
     ports:
       - "8081:8080"
     deploy:
@@ -30,7 +36,7 @@ services:
       dockerfile: ./../authentication-service/Dockerfile
     restart: always
     ports:
-      - "8082:8080"
+      - "8082:50001"
     deploy:
       mode: replicated
       replicas: 1
@@ -72,6 +78,7 @@ services:
       dockerfile: ./../logger-service/Dockerfile
     restart: always
     environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
       MONGO_USER: admin
       MONGO_PASSWORD: password
       MONGO_URL: mongodb://mongo:27017
@@ -111,6 +118,7 @@ services:
       dockerfile: ./../mailer-service/Dockerfile
     restart: always
     environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
       MAIL_DOMAIN: localhost
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
@@ -128,15 +136,6 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
-
-  listener:
-    build:
-      context: ./../listener-service
-      dockerfile: ./../listener-service/Dockerfile
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
 
   rabbitmq:
     image: rabbitmq:3.9.14-alpine

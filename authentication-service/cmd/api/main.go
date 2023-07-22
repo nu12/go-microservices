@@ -2,54 +2,69 @@ package main
 
 import (
 	"authentication/data"
+	authentication "authentication/grpc"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"time"
 
 	_ "github.com/jackc/pgconn"
 	_ "github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"google.golang.org/grpc"
 )
 
-const webPort = "0.0.0.0:8080"
-
-// TODO: Create a struct for the Environment variables
 type Config struct {
-	Repo   data.Repository
-	Client http.Client
-	Env    map[string]string
+	Repo data.Repository
+	Env  map[string]string
 }
-
-var app Config
 
 func main() {
 	log.Println("Starting authentication service")
 
-	conn := connectToDB()
-	if conn == nil {
-		panic("Cannot connect to the database")
+	app, err := setup()
+	if err != nil {
+		log.Panicln(err)
 	}
 
-	app.Client = http.Client{}
-	app.Env = map[string]string{"logger": "http://logger:8080/log"}
+	lis, err := net.Listen("tcp", "0.0.0.0:50001")
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	log.Println("Starting gRPC server")
+	grpcServer := grpc.NewServer()
+	authentication.RegisterAuthenticationServer(grpcServer, &AuthenticationServer{Config: app})
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+}
+
+func setup() (*Config, error) {
+	app := Config{
+		Env: map[string]string{},
+	}
+
+	for _, v := range []string{"DSN"} {
+		env, isSet := os.LookupEnv("DSN")
+		if !isSet {
+			return nil, errors.New(fmt.Sprintf("Env %s not found", v))
+		}
+		app.Env[v] = env
+	}
+
+	conn := app.connectToDB()
+	if conn == nil {
+		return nil, errors.New("Cannot connect to database")
+	}
 	app.setupRepo(conn)
 
-	if logger, isSet := os.LookupEnv("LOGGER_URL"); isSet {
-		app.Env["logger"] = logger
-	}
-
-	srv := http.Server{
-		Addr:    webPort,
-		Handler: app.routes(),
-	}
-
-	err := srv.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
-
+	return &app, nil
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -67,8 +82,8 @@ func openDB(dsn string) (*sql.DB, error) {
 
 }
 
-func connectToDB() *sql.DB {
-	dsn := os.Getenv("DSN")
+func (app *Config) connectToDB() *sql.DB {
+	dsn := app.Env["DSN"]
 
 	// TODO: Create a stopping condition for the loop
 

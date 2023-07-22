@@ -38,13 +38,11 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 50001
 
 env:
   - name: DSN
     value: "host=go-postgres port=5432 user=postgres  password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
-  - name: LOGGER_URL
-    value: "http://go-logger-service:8080"
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

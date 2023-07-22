@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o broker cmd/api/main.go cmd/api/routes.go  cmd/api/handlers.go cmd/api/helpers.go 
+RUN go build -o broker cmd/api/main.go cmd/api/routes.go  cmd/api/handlers.go cmd/api/helpers.go cmd/api/amqp.go
 
 FROM alpine:latest 
 LABEL org.opencontainers.image.source https://github.com/nu12/go-microservices
